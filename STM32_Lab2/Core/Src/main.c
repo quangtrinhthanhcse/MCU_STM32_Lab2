@@ -162,48 +162,17 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2);
 
-  setTimer1(250);
-  setTimer2(1000);
-  setTimer3(1000);
+  setTimer0(1000);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if(timer1_flag == 1){
-		  setTimer1(250);
-		  update7SEG(index_led);
-
-		  index_led++;
-		  if(index_led >= MAX_LED){
-			  index_led = 0;
-		  }
-	  }
-
-	  if(timer2_flag == 1){
-		  setTimer2(1000);
+	  if(timer0_flag == 1){
 		  HAL_GPIO_TogglePin(GPIOA, LED_RED_Pin);
-		  HAL_GPIO_TogglePin(GPIOA, DOT_Pin);
-	  }
-
-	  if(timer3_flag == 1){
-		  setTimer3(1000);
-
-		  sec++;
-		  if(sec >= 60){
-			  sec = 0;
-			  min++;
-			  if(min >= 60){
-				  min = 0;
-				  hour++;
-				  if(hour >= 24){
-					  hour = 0;
-				  }
-			  }
-		  }
-		  updateClockBuffer();
-
+		  setTimer0(1000);
 	  }
     /* USER CODE END WHILE */
 
