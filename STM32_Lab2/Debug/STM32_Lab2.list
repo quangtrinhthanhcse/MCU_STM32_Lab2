@@ -562,17 +562,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
  800040c:	f000 fbfe 	bl	8000c0c <HAL_GPIO_TogglePin>
 	}
 
-	seg_counter--;
- 8000410:	4b1e      	ldr	r3, [pc, #120]	; (800048c <HAL_TIM_PeriodElapsedCallback+0xa4>)
- 8000412:	681b      	ldr	r3, [r3, #0]
- 8000414:	3b01      	subs	r3, #1
- 8000416:	4a1d      	ldr	r2, [pc, #116]	; (800048c <HAL_TIM_PeriodElapsedCallback+0xa4>)
- 8000418:	6013      	str	r3, [r2, #0]
 	if(htim->Instance == TIM2){
- 800041a:	687b      	ldr	r3, [r7, #4]
+ 8000410:	687b      	ldr	r3, [r7, #4]
+ 8000412:	681b      	ldr	r3, [r3, #0]
+ 8000414:	f1b3 4f80 	cmp.w	r3, #1073741824	; 0x40000000
+ 8000418:	d130      	bne.n	800047c <HAL_TIM_PeriodElapsedCallback+0x94>
+		seg_counter--;
+ 800041a:	4b1c      	ldr	r3, [pc, #112]	; (800048c <HAL_TIM_PeriodElapsedCallback+0xa4>)
  800041c:	681b      	ldr	r3, [r3, #0]
- 800041e:	f1b3 4f80 	cmp.w	r3, #1073741824	; 0x40000000
- 8000422:	d12b      	bne.n	800047c <HAL_TIM_PeriodElapsedCallback+0x94>
+ 800041e:	3b01      	subs	r3, #1
+ 8000420:	4a1a      	ldr	r2, [pc, #104]	; (800048c <HAL_TIM_PeriodElapsedCallback+0xa4>)
+ 8000422:	6013      	str	r3, [r2, #0]
 		if(seg_counter <= 0){
  8000424:	4b19      	ldr	r3, [pc, #100]	; (800048c <HAL_TIM_PeriodElapsedCallback+0xa4>)
  8000426:	681b      	ldr	r3, [r3, #0]

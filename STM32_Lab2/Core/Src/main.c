@@ -259,8 +259,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 	}
 
-	seg_counter--;
 	if(htim->Instance == TIM2){
+		seg_counter--;
 		if(seg_counter <= 0){
 			seg_counter = 50;
 			if(state == 0){
