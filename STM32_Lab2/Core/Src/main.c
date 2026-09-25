@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "software_timer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -85,8 +85,10 @@ void display7SEG(int num){
 
 const int MAX_LED = 4;
 int index_led = 0;
-int led_buffer[4] = {9,8,7,6};
+int led_buffer[4] = {2,4,6,8};
+
 void update7SEG(int index){
+	// Active low, Mức High khóa PNP
 	HAL_GPIO_WritePin(GPIOA, EN0_Pin| EN1_Pin| EN2_Pin| EN3_Pin, GPIO_PIN_SET);
 
 	switch(index){
@@ -148,12 +150,29 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2);
+
+  setTimer1(250);
+  setTimer2(1000);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if(timer1_flag == 1){
+		  setTimer1(250);
+		  update7SEG(index_led);
+		  index_led++;
+		  if(index_led >= MAX_LED){
+			  index_led = 0;
+		  }
+	  }
+
+	  if(timer2_flag == 1){
+		  setTimer2(1000);
+		  HAL_GPIO_TogglePin(GPIOA, LED_RED_Pin);
+		  HAL_GPIO_TogglePin(GPIOA, DOT_Pin);
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -283,29 +302,10 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-int seg_counter = 50;
-//int state = 0;
-int blink_counter = 100;
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	if(htim->Instance == TIM2){
-		seg_counter--;
-		if(seg_counter <= 0){
-			seg_counter = 50;
-			update7SEG(index_led);
-
-			index_led++;
-			if(index_led >= MAX_LED){
-				index_led = 0;
-			}
-		}
-
-		blink_counter--;
-		if(blink_counter <= 0){
-			blink_counter = 100;
-			HAL_GPIO_TogglePin(GPIOA, DOT_Pin);
-			HAL_GPIO_TogglePin(GPIOA, LED_RED_Pin);
-		}
+		timerRun();
 	}
 }
 
