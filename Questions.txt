@@ -1,0 +1,20 @@
+Report 1:if in line 1 of the code above is miss, what happens after that and why? (Nếu thiếu dòng lệnh setTimer0(1000) ban đầu (ở trước while (1)), điều gì sẽ xảy ra và tại sao?)
+
+-> Hiện tượng: Đèn led ở chân PA5, sẽ không bao giờ nhấp nháy và giữ nguyên trạng thái ban đầu.
+
+-> Nguyên nhân: ban đầu biến timer0_counter = 0 và timer0_flag = 0. Nếu không gọi setTimer0() để nạp giá trị ban đầu cho timer0_counter, điều kiện if(timer0_counter > 0) trong hàm timerRun() luôn sai -> timer0_flag không bao giờ lên mức 1 -> khối lệnh while(1) không bao giờ được thực thi.
+
+Report 2:  if in line 1 of the code above is changed to setTimer0(1), what happens after that and why? (Nếu dòng lệnh trước while(1) là setTimer0(1) thì chuyện gì sẽ xảy ra và tại sao?)
+
+-> Hiện tượng: Đèn led ở chân PA5, sẽ không nhấp nháy như trường hợp thiếu lệnh.
+
+-> Nguyên nhân: Trong hàm setTimer0(int duration), biến đếm timer0_counter được gán bằng phép chia số nguyên timer0_counter = 1/ 10 (TIMER_CYCLE) = 0. Do kết quả 0 được gán cho timer0_counter, timer0_flag vẫn là 0. Hàm timer_run() không kích hoạt đếm -> cờ không được bật.
+
+Reprot 3:if in line1 of the code above is changed to setTimer0(10), what is changed compared to 2 first questions and why? (Nếu sửa dòng lệnh ban đầu thành setTimer0(10), có gì khác biệt so với 2 câu hỏi đầu và tại sao?)
+
+-> Hiện tượng: Đèn LED sẽ nhấp nháy nhưng ở lần chớp tắt đầu tiên, LED chuyển trạng thái siêu nhanh (10ms), sau đó nhấp nháy bình thường tùy theo duration đầu vào.
+
+-> Nguyên nhân:
+- Khi setTimer0(10): timer0_counter = 10/10 = 1
+- hàm timer_run() giảm timer_counter từ 1 về 0 và bật timer0_flag ngay.
+- while(1) phát hiện cờ được bật, thực hiện nhấp nháy đèn và chạy hàm setTimer0 trong khối lệnh if. Sau đó đèn nhấp nháy bình thường theo chu kỳ duration.

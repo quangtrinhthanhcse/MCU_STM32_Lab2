@@ -162,7 +162,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2);
 
-  setTimer0(1000);
+  setTimer0(10);
 
   /* USER CODE END 2 */
 
@@ -306,7 +306,7 @@ static void MX_GPIO_Init(void)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	if(htim->Instance == TIM2){
-		timerRun();
+		timer_run();
 	}
 }
 
