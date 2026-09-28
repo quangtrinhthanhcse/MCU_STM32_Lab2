@@ -22,6 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "software_timer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -84,10 +85,10 @@ void display7SEG(int num){
 
 const int MAX_LED = 4;
 int index_led = 0;
-int led_buffer[4] = {1,5,0,8};
+int led_buffer[4] = {1,5,0,9};
 
 int hour = 15;
-int min = 8;
+int min = 9;
 int sec = 57;
 
 void updateClockBuffer(void){
@@ -161,26 +162,36 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2);
   updateClockBuffer();
+  setTimer1(1000);
+  setTimer2(1000);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  sec++;
-	  if (sec >= 60) {
-		  sec = 0;
-		  min++;
+	  if(timer1_flag == 1){
+		  setTimer1(1000);
+		  HAL_GPIO_TogglePin(GPIOA, DOT_Pin);
+		  HAL_GPIO_TogglePin(GPIOA, LED_RED_Pin);
 	  }
-	  if (min >= 60) {
-		  min = 0;
-		  hour++;
-	  }
-	  if (hour >= 24)
-		  hour = 0;
-	  updateClockBuffer();
 
-	  HAL_Delay(1000);
+	  if(timer2_flag == 1){
+		  setTimer2(1000);
+		  sec++;
+		  if(sec >= 60){
+			  sec = 0;
+			  min++;
+		  }
+		  if(min >= 60){
+			  min = 0;
+			  hour++;
+		  }
+		  if(hour >= 24){
+			  hour = 0;
+		  }
+		  updateClockBuffer();
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -311,9 +322,11 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 int led_scan_counter = 25;
-int blink_counter = 100;
+//int blink_counter = 100;
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	if(htim->Instance == TIM2){
+		timer_run();
 		led_scan_counter--;
 		if(led_scan_counter <= 0){
 			led_scan_counter = 25;
@@ -322,12 +335,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 			if(index_led >= MAX_LED){
 				index_led = 0;
 			}
-		}
-		blink_counter--;
-		if(blink_counter <= 0){
-			blink_counter = 100;
-			HAL_GPIO_TogglePin(GPIOA, DOT_Pin);
-			HAL_GPIO_TogglePin(GPIOA, LED_RED_Pin);
 		}
 	}
 }
