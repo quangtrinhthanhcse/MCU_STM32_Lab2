@@ -22,7 +22,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "software_timer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -161,50 +160,27 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2);
-
-  setTimer1(250);
-  setTimer2(1000);
-  setTimer3(1000);
+  updateClockBuffer();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if(timer1_flag == 1){
-		  setTimer1(250);
-		  update7SEG(index_led);
-
-		  index_led++;
-		  if(index_led >= MAX_LED){
-			  index_led = 0;
-		  }
+	  sec++;
+	  if (sec >= 60) {
+		  sec = 0;
+		  min++;
 	  }
-
-	  if(timer2_flag == 1){
-		  setTimer2(1000);
-		  HAL_GPIO_TogglePin(GPIOA, LED_RED_Pin);
-		  HAL_GPIO_TogglePin(GPIOA, DOT_Pin);
+	  if (min >= 60) {
+		  min = 0;
+		  hour++;
 	  }
+	  if (hour >= 24)
+		  hour = 0;
+	  updateClockBuffer();
 
-	  if(timer3_flag == 1){
-		  setTimer3(1000);
-
-		  sec++;
-		  if(sec >= 60){
-			  sec = 0;
-			  min++;
-			  if(min >= 60){
-				  min = 0;
-				  hour++;
-				  if(hour >= 24){
-					  hour = 0;
-				  }
-			  }
-		  }
-		  updateClockBuffer();
-
-	  }
+	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -334,10 +310,25 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+int led_scan_counter = 25;
+int blink_counter = 100;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	if(htim->Instance == TIM2){
-		timerRun();
+		led_scan_counter--;
+		if(led_scan_counter <= 0){
+			led_scan_counter = 25;
+			update7SEG(index_led);
+			index_led++;
+			if(index_led >= MAX_LED){
+				index_led = 0;
+			}
+		}
+		blink_counter--;
+		if(blink_counter <= 0){
+			blink_counter = 100;
+			HAL_GPIO_TogglePin(GPIOA, DOT_Pin);
+			HAL_GPIO_TogglePin(GPIOA, LED_RED_Pin);
+		}
 	}
 }
 
