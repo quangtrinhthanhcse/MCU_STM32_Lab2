@@ -85,10 +85,10 @@ void display7SEG(int num){
 
 const int MAX_LED = 4;
 int index_led = 0;
-int led_buffer[4] = {1,5,0,9};
+int led_buffer[4] = {1,5,1,9};
 
 int hour = 15;
-int min = 9;
+int min = 19;
 int sec = 57;
 
 void updateClockBuffer(void){
@@ -164,6 +164,8 @@ int main(void)
   updateClockBuffer();
   setTimer1(1000);
   setTimer2(1000);
+  setTimer3(200);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -191,6 +193,15 @@ int main(void)
 			  hour = 0;
 		  }
 		  updateClockBuffer();
+	  }
+
+	  if (timer3_flag == 1){
+		  setTimer3(200);
+		  update7SEG(index_led);
+		  index_led++;
+		  if(index_led >= MAX_LED){
+			  index_led = 0;
+		}
 	  }
     /* USER CODE END WHILE */
 
@@ -327,15 +338,6 @@ int led_scan_counter = 25;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	if(htim->Instance == TIM2){
 		timer_run();
-		led_scan_counter--;
-		if(led_scan_counter <= 0){
-			led_scan_counter = 25;
-			update7SEG(index_led);
-			index_led++;
-			if(index_led >= MAX_LED){
-				index_led = 0;
-			}
-		}
 	}
 }
 
