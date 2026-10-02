@@ -55,9 +55,69 @@ static void MX_TIM2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+// Module bài 8: CLOCK 7SEG
+const uint8_t seg7_map[10] = {
+    0x40, // 0
+    0x79, // 1
+    0x24, // 2
+    0x30, // 3
+    0x19, // 4
+    0x12, // 5
+    0x02, // 6
+    0x78, // 7
+    0x00, // 8
+    0x10  // 9
+};
+// Hàm xuất dữ liệu 7 đoạn ra các chân PB0 - PB6
+void display7SEG(int num) {
+    if (num < 0 || num > 9) return;
+    uint8_t code = seg7_map[num];
+
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, (code & 0x01) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, (code & 0x02) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, (code & 0x04) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, (code & 0x08) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, (code & 0x10) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, (code & 0x20) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, (code & 0x40) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+// Khai báo biến và bộ đệm hiển thị cho 4 LED 7 đoạn
+const int MAX_LED = 4;
+int index_led = 0;
+int led_buffer[4] = {1, 5, 0, 8};
+
+int hour = 15;
+int min = 8;
+int sec = 57;
+
+// Hàm tình giờ và phút vào led_buffer
+void updateClockBuffer(void) {
+    led_buffer[0] = hour / 10;
+    led_buffer[1] = hour % 10;
+    led_buffer[2] = min / 10;
+    led_buffer[3] = min % 10;
+}
+
+void update7SEG(int index) {
+    // Tắt toàn bộ 4 LED trước khi kích LED mới
+    HAL_GPIO_WritePin(GPIOA, EN0_Pin | EN1_Pin | EN2_Pin | EN3_Pin, GPIO_PIN_SET);
+
+    switch (index) {
+        case 0: display7SEG(led_buffer[0]); HAL_GPIO_WritePin(GPIOA, EN0_Pin, GPIO_PIN_RESET); break;
+
+        case 1: display7SEG(led_buffer[1]); HAL_GPIO_WritePin(GPIOA, EN1_Pin, GPIO_PIN_RESET); break;
+
+        case 2: display7SEG(led_buffer[2]); HAL_GPIO_WritePin(GPIOA, EN2_Pin, GPIO_PIN_RESET); break;
+
+        case 3: display7SEG(led_buffer[3]); HAL_GPIO_WritePin(GPIOA, EN3_Pin, GPIO_PIN_RESET); break;
+
+        default: break;
+    }
+}
 
 // Module bài 9: Matrix 8x8
-const int max_led_matrix = 8;
+const int MAX_LED_MATRIX = 8;
 int index_led_matrix = 0;
 
 uint8_t matrix_buffer[8] = {0x00, 0xFC, 0x12, 0x11, 0x11, 0x12, 0xFC, 0x00};
@@ -68,6 +128,7 @@ void clearAllColumns(){
 }
 
 void setColumn(int col_index){
+	clearAllColumns();
 	switch (col_index){
 	case 0: HAL_GPIO_WritePin(GPIOA, ENM0_Pin, GPIO_PIN_SET); break;
 	case 1: HAL_GPIO_WritePin(GPIOA, ENM1_Pin, GPIO_PIN_SET); break;
@@ -81,7 +142,7 @@ void setColumn(int col_index){
 	}
 }
 
-void setRows(int data){
+void setRows(uint8_t data){
 	HAL_GPIO_WritePin(GPIOB, ROW0_Pin, (data & 0x01) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(GPIOB, ROW1_Pin, (data & 0x02) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(GPIOB, ROW2_Pin, (data & 0x04) ? GPIO_PIN_SET : GPIO_PIN_RESET);
@@ -93,7 +154,7 @@ void setRows(int data){
 }
 
 void updateLEDMatrix(int index){
-	if(index < 0 || index >= max_led_matrix) return;
+	if(index < 0 || index >= MAX_LED_MATRIX) return;
 	clearAllColumns();
 
 	setRows(matrix_buffer[index]);
@@ -101,9 +162,10 @@ void updateLEDMatrix(int index){
 	setColumn(index);
 }
 
+// Module bài 10: Left shiftting
 void shiftLeftMatrix(){
-	int temp = matrix_buffer[max_led_matrix-1];
-	for(int i = max_led_matrix; i > 0; i--){
+	uint8_t temp = matrix_buffer[MAX_LED_MATRIX-1];
+	for(int i = MAX_LED_MATRIX; i > 0; i--){
 		matrix_buffer[i] = matrix_buffer[i-1];
 	}
 	matrix_buffer[0] = temp;
@@ -141,30 +203,63 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM2_Init();
+
   /* USER CODE BEGIN 2 */
 //  __HAL_AFIO_REMAP_SWJ_DISABLE();
   HAL_TIM_Base_Start_IT(&htim2);
+  updateClockBuffer();
+  setTimer(0, 250);
+  setTimer(1, 1000);
+  setTimer(2, 10);
+  setTimer(3, 200);
 
-  setTimer1(10);
-  setTimer2(300);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if(timer1_flag == 1){
-		  setTimer1(10);
-		  updateLEDMatrix(index_led_matrix);
-		  index_led_matrix++;
-		  if(index_led_matrix >= max_led_matrix){
-			  index_led_matrix = 0;
+	  if(timer_flag[0] == 1){
+		  setTimer(0, 250);
+		  update7SEG(index_led);
+		  index_led++;
+		  if(index_led >= MAX_LED){
+			  index_led = 0;
 		  }
 	  }
-	  if(timer2_flag == 1){
-		  setTimer2(300);
+
+	  if(timer_flag[1] == 1){
+		  setTimer(1, 1000);
+		  HAL_GPIO_TogglePin(GPIOA, DOT_Pin);
+		  HAL_GPIO_TogglePin(GPIOA, LED_RED_Pin);
+
+		  sec++;
+		  if (sec>=60){
+			  sec=0;
+			  min++;
+			  if(min>=60){
+				  min=0;
+				  hour++;
+				  if(hour>=24) hour=0;
+			  }
+		  }
+		  updateClockBuffer();
+	  }
+
+	  if(timer_flag[2] == 1){
+		  setTimer(2, 10);
+		  updateLEDMatrix(index_led_matrix);
+		  	  index_led_matrix++;
+		  	  if (index_led_matrix >= MAX_LED_MATRIX) {
+			  index_led_matrix = 0;
+		  	  }
+	  }
+
+	  if(timer_flag[3] == 1){
+		  setTimer(3, 200);
 		  shiftLeftMatrix();
 	  }
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -212,6 +307,7 @@ void SystemClock_Config(void)
   * @param None
   * @retval None
   */
+
 static void MX_TIM2_Init(void)
 {
 
@@ -251,6 +347,7 @@ static void MX_TIM2_Init(void)
   /* USER CODE END TIM2_Init 2 */
 
 }
+
 
 /**
   * @brief GPIO Initialization Function
@@ -308,6 +405,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
+
 
 /* USER CODE BEGIN 4 */
 

@@ -9,12 +9,11 @@
 #define INC_SOFTWARE_TIMER_H_
 
 #define TIMER_CYCLE 10
+#define MAX_TIMERS 5
 
-extern int timer1_flag;
-extern int timer2_flag;
+extern int timer_flag[MAX_TIMERS];
 
-void setTimer1(int duration);
-void setTimer2(int duration);
+void setTimer(int index, int duration);
 
 void timerRun();
 
