@@ -101,6 +101,14 @@ void updateLEDMatrix(int index){
 	setColumn(index);
 }
 
+void shiftLeftMatrix(){
+	int temp = matrix_buffer[max_led_matrix-1];
+	for(int i = max_led_matrix; i > 0; i--){
+		matrix_buffer[i] = matrix_buffer[i-1];
+	}
+	matrix_buffer[0] = temp;
+}
+
 
 /* USER CODE END 0 */
 
@@ -138,7 +146,7 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim2);
 
   setTimer1(10);
-
+  setTimer2(300);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -152,6 +160,10 @@ int main(void)
 		  if(index_led_matrix >= max_led_matrix){
 			  index_led_matrix = 0;
 		  }
+	  }
+	  if(timer2_flag == 1){
+		  setTimer2(300);
+		  shiftLeftMatrix();
 	  }
     /* USER CODE END WHILE */
 
